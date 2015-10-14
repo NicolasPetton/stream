@@ -2,7 +2,7 @@
 
 ## Summary
 
-`stream.el` provides an implementation of streams, defined as as delayed
+`stream.el` provides an implementation of streams, implemented as delayed
 evaluation of cons cells.
 
 `stream.el` requires Emacs >= 25.1.
