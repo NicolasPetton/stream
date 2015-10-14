@@ -7,7 +7,7 @@ evaluation of cons cells.
 
 `stream.el` requires Emacs >= 25.1.
 
-Functions defined in `seq.el' can also take a stream as input.
+Functions defined in [seq.el](https://github.com/NicolasPetton/seq.el) can also take a stream as input.
 
 Streams could be created from any sequential input data:
  - sequences, making operation on them lazy
@@ -20,7 +20,7 @@ Streams could be created from any sequential input data:
  - ...
 
 All functions are prefixed with "stream-".
-All functions are tested in test/automated/stream-tests.el
+All functions are tested in test/stream-tests.el
 
 Here is an example implementation of the Fibonacci numbers
 implemented as in infinite stream:
