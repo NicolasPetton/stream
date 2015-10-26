@@ -4,7 +4,7 @@
 
 ;; Author: Nicolas Petton <nicolas@petton.fr>
 ;; Keywords: stream, laziness, sequences
-;; Version: 1.1.0
+;; Version: 2.0.0
 ;; Package-Requires: ((emacs "25"))
 ;; Package: stream
 
@@ -142,7 +142,7 @@ range is infinite."
      (stream-range (+ start step) end step))))
 
 
-(defun stream-p (stream)
+(defun streamp (stream)
   "Return non-nil if STREAM is a stream, nil otherwise."
   (and (consp stream)
        (eq (car stream) stream--identifier)))
@@ -171,7 +171,7 @@ range is infinite."
   (cl-generic-make-generalizer
    11
    (lambda (name)
-     `(when (stream-p ,name)
+     `(when (streamp ,name)
         'stream))
    (lambda (tag)
      (when (eq tag 'stream)

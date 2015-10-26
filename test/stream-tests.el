@@ -36,11 +36,11 @@
     (reverse result)))
 
 (ert-deftest stream-empty-test ()
-  (should (stream-p (stream-empty)))
+  (should (streamp (stream-empty)))
   (should (stream-empty-p (stream-empty))))
 
 (ert-deftest stream-make-test ()
-  (should (stream-p (stream-range)))
+  (should (streamp (stream-range)))
   (should (not (stream-empty-p (stream-range))))) ;; Should use stream-list or something
 
 (ert-deftest stream-first-test ()
@@ -76,7 +76,7 @@
     (should (= first 2))
     (should (= third 4))
     ;; The rest of the stream shouldn't be consumed
-    (should (stream-p rest))
+    (should (streamp rest))
     (should (= 5 (stream-first rest)))
     (should (= 6 (stream-first (stream-rest rest))))
     (should (stream-empty-p (stream-rest (stream-rest rest))))))
@@ -86,21 +86,21 @@
   )
 
 (ert-deftest stream-seq-into-test ()
-  (should (stream-p (seq-into (stream-empty) 'stream)))
-  (should (stream-p (seq-into '(2 4 5) 'stream)))
+  (should (streamp (seq-into (stream-empty) 'stream)))
+  (should (streamp (seq-into '(2 4 5) 'stream)))
   (should (= 2  (stream-first (seq-into '(2 4 5) 'stream))))
   (should (null (seq-into (stream-empty) 'list)))
   (should (equal '(0 1 2 3 4 5 6 7 8 9) (seq-into (stream-range 0 10) 'list))))
 
 (ert-deftest stream-seq-take-test ()
-  (should (stream-p (seq-take (stream-range) 2)))
+  (should (streamp (seq-take (stream-range) 2)))
   (should (= 0 (stream-first (seq-take (stream-range) 2))))
   (should (= 1 (stream-first (stream-rest (seq-take (stream-range) 2)))))
   (should (null (stream-first (stream-rest (stream-rest (seq-take (stream-range) 2))))))
   (should (stream-empty-p (stream-rest (stream-rest (seq-take (stream-range) 2))))))
 
 (ert-deftest stream-seq-drop-test ()
-  (should (stream-p (seq-drop (stream-range) 2)))
+  (should (streamp (seq-drop (stream-range) 2)))
   (should (= 2 (stream-first (seq-drop (stream-range) 2))))
   (should (= 3 (stream-first (stream-rest (seq-drop (stream-range) 2)))))
   (should (stream-empty-p (seq-drop (stream-empty) 2))))
@@ -108,14 +108,14 @@
 (ert-deftest stream-seq-take-while-test ()
   (let ((stream (stream '(1 3 2 5))))
     (should (stream-empty-p (seq-take-while #'identity (stream-empty))))
-    (should (stream-p (seq-take-while #'oddp stream)))
+    (should (streamp (seq-take-while #'oddp stream)))
     (should (= 1 (stream-first (seq-take-while #'oddp stream))))
     (should (= 3 (stream-first (stream-rest (seq-take-while #'oddp stream)))))
     (should (stream-empty-p (stream-rest (stream-rest (seq-take-while #'oddp stream)))))))
 
 (ert-deftest stream-seq-drop-while-test ()
   (let ((stream (stream '(1 3 2 5))))
-    (should (stream-p (seq-drop-while #'evenp stream)))
+    (should (streamp (seq-drop-while #'evenp stream)))
     (should (stream-empty-p (seq-drop-while #'identity (stream-empty))))
     (should (= 2 (stream-first (seq-drop-while #'evenp stream))))
     (should (= 5 (stream-first (stream-rest (seq-drop-while #'evenp stream)))))
@@ -142,7 +142,7 @@
   (should (stream-empty-p (stream-rest (stream-rest (seq-filter #'oddp (stream-range 0 4)))))))
 
 (ert-deftest stream-seq-copy-test ()
-  (should (stream-p (seq-copy (stream-range))))
+  (should (streamp (seq-copy (stream-range))))
   (should (= 0 (stream-first (seq-copy (stream-range)))))
   (should (= 1 (stream-first (stream-rest (seq-copy (stream-range)))))))
 
