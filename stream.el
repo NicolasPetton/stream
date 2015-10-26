@@ -161,7 +161,8 @@ range is infinite."
 
 (defun stream-rest (stream)
   "Return a stream of all but the first element of STREAM."
-  (cdr (stream--force (cadr stream))))
+  (or (cdr (stream--force (cadr stream)))
+      (stream-empty)))
 
 
 ;;; cl-generic support for streams
@@ -224,7 +225,8 @@ This function will eagerly consume the entire stream."
 
 (cl-defmethod seq-take ((stream stream) n)
   "Return a stream of the first N elements of STREAM."
-  (if (zerop n)
+  (if (or (zerop n)
+          (stream-empty-p stream))
       (stream-empty)
     (stream-cons
      (stream-first stream)
