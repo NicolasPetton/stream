@@ -4,7 +4,7 @@
 
 ;; Author: Nicolas Petton <nicolas@petton.fr>
 ;; Keywords: stream, laziness, sequences
-;; Version: 1.0
+;; Version: 1.0.1
 ;; Package-Requires: ((emacs "25"))
 ;; Package: stream
 
@@ -183,17 +183,17 @@ range is infinite."
 
 ;;; Implementation of seq.el generic functions
 
-(cl-defgeneric seq-p ((_stream stream))
+(cl-defmethod seq-p ((_stream stream))
   t)
 
-(cl-defgeneric seq-elt ((stream stream) n)
+(cl-defmethod seq-elt ((stream stream) n)
   "Return the element of STREAM at index N."
   (while (> n 0)
     (setq stream (stream-rest stream))
     (setq n (1- n)))
   (stream-first stream))
 
-(cl-defgeneric seq-length ((stream stream))
+(cl-defmethod seq-length ((stream stream))
   "Return the length of STREAM.
 This function will eagerly consume the entire stream."
   (let ((len 0))
@@ -202,27 +202,27 @@ This function will eagerly consume the entire stream."
       (setq stream (stream-rest stream)))
     len))
 
-(cl-defgeneric seq-subseq ((stream stream) start end)
+(cl-defmethod seq-subseq ((stream stream) start end)
   (seq-take (seq-drop stream start) (- end start)))
 
-(cl-defgeneric seq-into-sequence ((stream stream))
+(cl-defmethod seq-into-sequence ((stream stream))
   "Convert STREAM into a sequence"
   (let ((list))
     (seq-doseq (elt stream)
       (push elt list))
     (nreverse list)))
 
-(cl-defgeneric seq-into ((stream stream) type)
+(cl-defmethod seq-into ((stream stream) type)
   "Convert STREAM into a sequence of type TYPE."
   (seq-into (seq-into-sequence stream) type))
 
-(cl-defgeneric seq-into ((stream stream) (_type (eql stream)))
+(cl-defmethod seq-into ((stream stream) (_type (eql stream)))
   stream)
 
-(cl-defgeneric seq-into ((seq sequence) (_type (eql stream)))
+(cl-defmethod seq-into ((seq sequence) (_type (eql stream)))
   (stream seq))
 
-(cl-defgeneric seq-take ((stream stream) n)
+(cl-defmethod seq-take ((stream stream) n)
   "Return a stream of the first N elements of STREAM."
   (if (zerop n)
       (stream-empty)
@@ -230,7 +230,7 @@ This function will eagerly consume the entire stream."
      (stream-first stream)
      (seq-take (stream-rest stream) (1- n)))))
 
-(cl-defgeneric seq-drop ((stream stream) n)
+(cl-defmethod seq-drop ((stream stream) n)
   "Return a stream of STREAM without its first N elements."
   (stream-make
    (while (not (or (stream-empty-p stream) (zerop n)))
@@ -240,14 +240,14 @@ This function will eagerly consume the entire stream."
      (cons (stream-first stream)
            (stream-rest stream)))))
 
-(cl-defgeneric seq-take-while (pred (stream stream))
+(cl-defmethod seq-take-while (pred (stream stream))
   "Return a stream of the successive elements for which (PRED elt) is non-nil in STREAM."
   (stream-make
    (when (funcall pred (stream-first stream))
      (cons (stream-first stream)
            (seq-take-while pred (stream-rest stream))))))
 
-(cl-defgeneric seq-drop-while (pred (stream stream))
+(cl-defmethod seq-drop-while (pred (stream stream))
   "Return a stream from the first element for which (PRED elt) is nil in STREAM."
   (stream-make
    (while (not (or (stream-empty-p stream)
@@ -257,7 +257,7 @@ This function will eagerly consume the entire stream."
      (cons (stream-first stream)
            (stream-rest stream)))))
 
-(cl-defgeneric seq-map (function (stream stream))
+(cl-defmethod seq-map (function (stream stream))
   "Return a stream.
 The elements of the produced sequence consist of the application
 of FUNCTION to each element of STREAM."
@@ -267,7 +267,7 @@ of FUNCTION to each element of STREAM."
       (funcall function (stream-first stream))
      (seq-map function (stream-rest stream)))))
 
-(cl-defgeneric seq-do (function (stream stream))
+(cl-defmethod seq-do (function (stream stream))
   "Evaluate FUNCTION for each element of STREAM eagerly, and return nil.
 
 `seq-do' should never be used on infinite streams."
@@ -275,7 +275,7 @@ of FUNCTION to each element of STREAM."
     (funcall function (stream-first stream))
     (setq stream (stream-rest stream))))
 
-(cl-defgeneric seq-filter (pred (stream stream))
+(cl-defmethod seq-filter (pred (stream stream))
   "Return a stream of the elements for which (PRED element) is non-nil in STREAM."
   (if (stream-empty-p stream)
       stream
@@ -288,7 +288,7 @@ of FUNCTION to each element of STREAM."
        (cons (stream-first stream)
              (seq-filter pred (stream-rest stream)))))))
 
-(cl-defgeneric seq-copy ((stream stream))
+(cl-defmethod seq-copy ((stream stream))
   "Return a shallow copy of STREAM."
   (stream-cons (stream-first stream)
                (stream-rest stream)))
