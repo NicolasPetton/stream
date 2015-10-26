@@ -4,7 +4,7 @@
 
 ;; Author: Nicolas Petton <nicolas@petton.fr>
 ;; Keywords: stream, laziness, sequences
-;; Version: 2.0.0
+;; Version: 2.0.1
 ;; Package-Requires: ((emacs "25"))
 ;; Package: stream
 
@@ -54,33 +54,18 @@
 
 (eval-when-compile (require 'cl-lib))
 (require 'seq)
+(require 'thunk)
 
 (eval-and-compile
   (defconst stream--identifier '--stream--
     "Symbol internally used to identify streams."))
-
-(defmacro stream--delay (&rest body)
-  "Delay the evaluation of BODY."
-  (declare (debug t))
-  (let ((forced (make-symbol "forced"))
-        (val (make-symbol "val")))
-    `(let (,forced ,val)
-       (lambda ()
-         (unless ,forced
-           (setf ,val (progn ,@body))
-           (setf ,forced t))
-         ,val))))
-
-(defun stream--force (delayed)
-  "Force the evaluation of DELAYED."
-  (funcall delayed))
 
 (defmacro stream-make (&rest body)
   "Return a stream built from BODY.
 BODY must return nil or a cons cell, which cdr is itself a
 stream."
   (declare (debug t))
-  `(list ',stream--identifier (stream--delay ,@body)))
+  `(list ',stream--identifier (thunk-delay ,@body)))
 
 (defmacro stream-cons (first rest)
   "Return a stream built from the cons of FIRST and REST.
@@ -149,19 +134,19 @@ range is infinite."
 
 (defun stream-empty ()
   "Return an empty stream."
-  (list stream--identifier (stream--delay nil)))
+  (list stream--identifier (thunk-delay nil)))
 
 (defun stream-empty-p (stream)
   "Return non-nil is STREAM is empty, nil otherwise."
-  (null (stream--force (cadr stream))))
+  (null (thunk-force (cadr stream))))
 
 (defun stream-first (stream)
   "Return the first element of STREAM."
-  (car (stream--force (cadr stream))))
+  (car (thunk-force (cadr stream))))
 
 (defun stream-rest (stream)
   "Return a stream of all but the first element of STREAM."
-  (or (cdr (stream--force (cadr stream)))
+  (or (cdr (thunk-force (cadr stream)))
       (stream-empty)))
 
 
