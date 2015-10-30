@@ -4,7 +4,7 @@
 
 ;; Author: Nicolas Petton <nicolas@petton.fr>
 ;; Keywords: stream, laziness, sequences
-;; Version: 2.0.1
+;; Version: 2.0.2
 ;; Package-Requires: ((emacs "25"))
 ;; Package: stream
 
@@ -152,15 +152,14 @@ range is infinite."
 
 ;;; cl-generic support for streams
 
-(defvar stream--generalizer
-  (cl-generic-make-generalizer
-   11
-   (lambda (name)
-     `(when (streamp ,name)
-        'stream))
-   (lambda (tag)
-     (when (eq tag 'stream)
-       '(stream)))))
+(cl-generic-define-generalizer stream--generalizer
+  11
+  (lambda (name)
+    `(when (streamp ,name)
+       'stream))
+  (lambda (tag)
+    (when (eq tag 'stream)
+      '(stream))))
 
 (cl-defmethod cl-generic-generalizers ((_specializer (eql stream)))
   "Support for `stream' specializers."
