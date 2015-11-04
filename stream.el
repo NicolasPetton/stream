@@ -113,6 +113,15 @@ The sequence starts at POS if non-nil, 1 otherwise."
            (char-after (point)))))
      (stream buffer (1+ pos)))))
 
+(defun stream-regexp (buffer regexp)
+  (stream-make
+   (let (match)
+     (with-current-buffer buffer
+       (setq match (re-search-forward regexp nil t)))
+     (when match
+       (cons (match-data) (stream-regexp buffer regexp))
+       nil))))
+
 (defun stream-range (&optional start end step)
   "Return a stream of the integers from START to END, stepping by STEP.
 If START is nil, it defaults to 0. If STEP is nil, it defaults to
