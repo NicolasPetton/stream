@@ -247,11 +247,13 @@ This function will eagerly consume the entire stream."
   "Return a stream.
 The elements of the produced sequence consist of the application
 of FUNCTION to each element of STREAM."
-  (if (stream-empty-p stream)
-      stream
-    (stream-cons
-      (funcall function (stream-first stream))
-     (seq-map function (stream-rest stream)))))
+  (stream-make
+   ;; Avoid using `stream-empty-p', as it will consume the first element of the
+   ;; stream before iterating over the stream.
+   (let ((first (stream-first stream)))
+     (when first
+       (cons (funcall function first)
+             (seq-map function (stream-rest stream)))))))
 
 (cl-defmethod seq-do (function (stream stream))
   "Evaluate FUNCTION for each element of STREAM eagerly, and return nil.

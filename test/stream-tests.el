@@ -168,5 +168,11 @@
   (should (= (seq-length (seq-subseq (stream-range 2 10) 1 3)) 2))
   (should (= (seq-elt (seq-subseq (stream-range 2 10) 1 3) 1) 4)))
 
+(ert-deftest stream-seq-map-should-not-consume-stream-elements ()
+  (let* (consumed
+         (stream (stream-cons (setq consumed t) (stream-empty))))
+    (seq-map #'identity stream)
+    (should-not consumed)))
+
 (provide 'stream-tests)
 ;;; stream-tests.el ends here
