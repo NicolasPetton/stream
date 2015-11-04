@@ -244,14 +244,16 @@ This function will eagerly consume the entire stream."
            (stream-rest stream)))))
 
 (cl-defmethod seq-map (function (stream stream))
-  "Return a stream representing the mapping of FUNCTION over STREAM.
+    "Return a stream representing the mapping of FUNCTION over STREAM.
 The elements of the produced stream are the results of the
 applications of FUNCTION on each element of STREAM in succession."
-  (if (stream-empty-p stream)
-      stream
-    (stream-cons
-     (funcall function (stream-first stream))
-     (seq-map function (stream-rest stream)))))
+  (stream-make
+   ;; Avoid using `stream-empty-p', as it will consume the first element of the
+   ;; stream before iterating over the stream.
+   (let ((first (stream-first stream)))
+     (when first
+       (cons (funcall function first)
+             (seq-map function (stream-rest stream)))))))
 
 (cl-defmethod seq-do (function (stream stream))
   "Evaluate FUNCTION for each element of STREAM eagerly, and return nil.
