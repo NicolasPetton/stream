@@ -174,5 +174,13 @@
     (seq-map #'identity stream)
     (should-not consumed)))
 
+(ert-deftest stream-pop-test ()
+  (let* ((str (stream '(1 2 3)))
+         (first (stream-pop str))
+         (stream-empty (stream-empty)))
+    (should (= 1 first))
+    (should (= 2 (stream-first str)))
+    (should (null (stream-pop stream-empty)))))
+
 (provide 'stream-tests)
 ;;; stream-tests.el ends here
