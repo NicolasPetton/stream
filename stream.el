@@ -4,7 +4,7 @@
 
 ;; Author: Nicolas Petton <nicolas@petton.fr>
 ;; Keywords: stream, laziness, sequences
-;; Version: 2.0.5
+;; Version: 2.1.0
 ;; Package-Requires: ((emacs "25"))
 ;; Package: stream
 
@@ -184,7 +184,7 @@ range is infinite."
 
 ;;; Implementation of seq.el generic functions
 
-(cl-defmethod seq-p ((_stream stream))
+(cl-defmethod seqp ((_stream stream))
   t)
 
 (cl-defmethod seq-elt ((stream stream) n)
