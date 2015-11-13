@@ -113,6 +113,17 @@ The sequence starts at POS if non-nil, 1 otherwise."
            (char-after (point)))))
      (stream buffer (1+ pos)))))
 
+(declare-function iter-next "generator")
+
+(defun stream-from-iterator (iterator)
+  "Return a stream generating new elements through ITERATOR.
+ITERATOR is an iterator object in terms of the \"generator\"
+package."
+  (stream-make
+   (condition-case nil
+       (cons (iter-next iterator) (stream-from-iterator iterator))
+     (iter-end-of-sequence nil))))
+
 (defun stream-regexp (buffer regexp)
   (stream-make
    (let (match)
