@@ -157,6 +157,22 @@ range is infinite."
   (or (cdr (thunk-force (cadr stream)))
       (stream-empty)))
 
+(defun stream-append (&rest streams)
+  "Concatenate the STREAMS.
+Requesting elements from the resulting stream will request the
+elements in the STREAMS in order."
+  (if (null streams)
+      (stream-empty)
+    (stream-make
+     (let ((first (pop streams)))
+       (while (and (stream-empty-p first) streams)
+         (setq first (pop streams)))
+       (if (stream-empty-p first)
+           nil
+         (cons (stream-first first)
+               (if streams (apply #'stream-append (stream-rest first) streams)
+                 (stream-rest first))))))))
+
 (defmacro stream-pop (stream)
   "Return the first element of STREAM and set the value of STREAM to its rest."
   (unless (symbolp stream)

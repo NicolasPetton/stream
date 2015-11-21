@@ -51,6 +51,26 @@
   (should (= 4 (stream-first (stream-rest (stream-range 3)))))
   (should (= 5 (stream-first (stream-rest (stream-rest (stream-range 3)))))))
 
+(ert-deftest stream-append-test ()
+  (should (stream-empty-p (stream-append)))
+  (should (let ((list '(1 2)))
+            (equal list (seq-into-sequence (stream-append (stream list))))))
+  (should (= (seq-elt (stream-append
+                       (stream (list 0 1))
+                       (stream-range 2))
+                      4)
+             4))
+  (should (let ((stream (stream (list 0))))
+            (and (= (seq-elt (stream-append stream (stream-range 1)) 10)
+                    10)
+                 (stream-empty-p (stream-rest stream)))))
+  (should (equal (seq-into-sequence
+                  (stream-append
+                   (stream '(1))
+                   (stream '())
+                   (stream '(2 3))))
+                 '(1 2 3))))
+
 (ert-deftest stream-seq-p-test ()
   (should (seq-p (stream-range))))
 
