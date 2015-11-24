@@ -51,6 +51,15 @@
   (should (= 4 (stream-first (stream-rest (stream-range 3)))))
   (should (= 5 (stream-first (stream-rest (stream-rest (stream-range 3)))))))
 
+(ert-deftest stream-from-iterator-test ()
+  (skip-unless (require 'generator nil t))
+  (should (equal '(1 2)
+                 (seq-into-sequence
+                  (stream-from-iterator
+                   (funcall (iter-lambda ()
+                              (iter-yield 1)
+                              (iter-yield 2))))))))
+
 (ert-deftest stream-append-test ()
   (should (stream-empty-p (stream-append)))
   (should (let ((list '(1 2)))
