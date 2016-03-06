@@ -1,10 +1,10 @@
 ;;; stream.el --- Implementation of streams  -*- lexical-binding: t -*-
 
-;; Copyright (C) 2015 Free Software Foundation, Inc.
+;; Copyright (C) 2016 Free Software Foundation, Inc.
 
 ;; Author: Nicolas Petton <nicolas@petton.fr>
 ;; Keywords: stream, laziness, sequences
-;; Version: 2.1.0
+;; Version: 2.2.0
 ;; Package-Requires: ((emacs "25"))
 ;; Package: stream
 
@@ -152,7 +152,7 @@ range is infinite."
        (eq (car stream) stream--identifier)))
 
 (defun stream-empty ()
-  "Return an empty stream."
+  "Return a new empty stream."
   (list stream--identifier (thunk-delay nil)))
 
 (defun stream-empty-p (stream)
@@ -317,10 +317,69 @@ kind of nonlocal exit."
        (cons (stream-first stream)
              (seq-filter pred (stream-rest stream)))))))
 
+(defmacro stream-delay (expr)
+  "Return a new stream to be obtained by evaluating EXPR.
+EXPR will be evaluated once when an element of the resulting
+stream is requested for the first time, and must return a stream.
+EXPR will be evaluated in the lexical environment present when
+calling this function."
+  (let ((stream (make-symbol "stream")))
+    `(stream-make (let ((,stream ,expr))
+                    (if (stream-empty-p ,stream)
+                        nil
+                      (cons (stream-first ,stream)
+                            (stream-rest ,stream)))))))
+
 (cl-defmethod seq-copy ((stream stream))
   "Return a shallow copy of STREAM."
-  (stream-cons (stream-first stream)
-               (stream-rest stream)))
+  (stream-delay stream))
+
+(defun stream-of-directory-files-1 (directory &optional nosort recurse follow-links)
+  "Helper for `stream-of-directory-files'."
+  (stream-delay
+   (if (file-accessible-directory-p directory)
+       (let (files dirs (reverse-fun (if nosort #'identity #'nreverse)))
+         (dolist (file (directory-files directory t nil nosort))
+           (let ((is-dir (file-directory-p file)))
+             (unless (and is-dir
+                          (member (file-name-nondirectory (directory-file-name file))
+                                  '("." "..")))
+               (push file files)
+               (when (and is-dir
+                          (or follow-links (not (file-symlink-p file)))
+                          (if (functionp recurse) (funcall recurse file) recurse))
+                 (push file dirs)))))
+         (apply #'stream-append
+                (stream (funcall reverse-fun files))
+                (mapcar
+                 (lambda (dir) (stream-of-directory-files-1 dir nosort recurse follow-links))
+                 (funcall reverse-fun dirs))))
+     (stream-empty))))
+
+(defun stream-of-directory-files (directory &optional full nosort recurse follow-links filter)
+  "Return a stream of names of files in DIRECTORY.
+Call `directory-files' to list file names in DIRECTORY and make
+the result a stream.  Don't include files named \".\" or \"..\".
+The arguments FULL and NOSORT are directly passed to
+`directory-files'.
+
+Third optional argument RECURSE non-nil means recurse on
+subdirectories.  If RECURSE is a function, it should be a
+predicate accepting one argument, an absolute file name of a
+directory, and return non-nil when the returned stream should
+recurse into that directory.  Any other non-nil value means
+recurse into every readable subdirectory.
+
+Even with recurse non-nil, don't descent into directories by
+following symlinks unless FOLLOW-LINKS is non-nil.
+
+If FILTER is non-nil, it should be a predicate accepting one
+argument, an absolute file name.  It is used to limit the
+resulting stream to the files fulfilling this predicate."
+  (let* ((stream (stream-of-directory-files-1 directory nosort recurse follow-links))
+         (filtered-stream (if filter (seq-filter filter stream) stream)))
+    (if full filtered-stream
+      (seq-map (lambda (file) (file-relative-name file directory)) filtered-stream))))
 
 (provide 'stream)
 ;;; stream.el ends here
